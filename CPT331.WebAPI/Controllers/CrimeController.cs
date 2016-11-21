@@ -20,12 +20,12 @@ namespace CPT331.WebAPI.Controllers
     ///    that are related to the EventGuardian Crime data.
     /// </summary>
 	public class CrimeController : ApiController
-	{
-		private const int DefaultNumberOfCrimeRecords = 6;
-		private const string OtherCrimesName = "Other";
-		private const string SortFieldDateTime = "DATETIME";
-		private const string SortFieldID = "ID";
-		private const string SortFieldName = "NAME";
+    {
+        private const int DefaultNumberOfCrimeRecords = 6;
+        private const string OtherCrimesName = "Other";
+        private const string SortFieldDateTime = "DATETIME";
+        private const string SortFieldID = "ID";
+        private const string SortFieldName = "NAME";
 
         /// <summary>
         /// Provides crime data object based on a specified ID.
@@ -33,25 +33,25 @@ namespace CPT331.WebAPI.Controllers
         /// <param name="id">The unique ID value of the crime data record.</param>
         /// <returns>A single crime record.</returns>
 		[HttpGet]
-		[Route("api/Crime/{id}")]
-		public CrimeModel Crime(int id)
-		{
-			Crime crime = DataProvider.CrimeRepository.GetCrimeByID(id);
+        [Route("api/Crime/{id}")]
+        public CrimeModel Crime(int id)
+        {
+            Crime crime = DataProvider.CrimeRepository.GetCrimeByID(id);
 
-			return new CrimeModel
-			(
-				crime.Count,
-				crime.DateCreatedUtc,
-				crime.DateUpdatedUtc,
-				crime.ID,
-				crime.IsDeleted,
-				crime.IsVisible,
-				crime.LocalGovernmentAreaID,
-				crime.Month,
-				crime.OffenceID,
-				crime.Year
-			);
-		}
+            return new CrimeModel
+            (
+                crime.Count,
+                crime.DateCreatedUtc,
+                crime.DateUpdatedUtc,
+                crime.ID,
+                crime.IsDeleted,
+                crime.IsVisible,
+                crime.LocalGovernmentAreaID,
+                crime.Month,
+                crime.OffenceID,
+                crime.Year
+            );
+        }
 
         /// <summary>
         /// Provides Local Government Area crime statistics on a based values specified. 
@@ -63,12 +63,12 @@ namespace CPT331.WebAPI.Controllers
         /// <param name="sortDirection">The sort order of the data returned; as ascending or descending.</param>
         /// <returns>Crime statistics.</returns>
 		[HttpGet]
-		[Route("api/Crime/CrimesByCoordinate")]
-		[ValidateCoordinates]
-		public CrimeByCoordinateModel CrimesByCoordinate(double latitude, double longitude, int count = DefaultNumberOfCrimeRecords, string sortBy = "", SortDirection? sortDirection = null)
-		{
-			CrimeByCoordinateModel crimeByCoordinateModel = null;
-			List<CrimeByCoordinate> crimeByCoordinates = DataProvider.CrimeRepository.GetCrimesByCoordinate(latitude, longitude);
+        [Route("api/Crime/CrimesByCoordinate")]
+        [ValidateCoordinates]
+        public CrimeByCoordinateModel CrimesByCoordinate(double latitude, double longitude, int count = DefaultNumberOfCrimeRecords, string sortBy = "", SortDirection? sortDirection = null)
+        {
+            CrimeByCoordinateModel crimeByCoordinateModel = null;
+            List<CrimeByCoordinate> crimeByCoordinates = DataProvider.CrimeRepository.GetCrimesByCoordinate(latitude, longitude);
 
             if ((String.IsNullOrEmpty(sortBy) == false) && (sortDirection.HasValue == true))
             {
@@ -76,20 +76,21 @@ namespace CPT331.WebAPI.Controllers
             }
 
             Dictionary<string, double> offenceValues = new Dictionary<string, double>();
-            if(crimeByCoordinates.Count > 0)
-            { 
+            if (crimeByCoordinates.Count > 0)
+            {
                 crimeByCoordinates.ForEach(m => offenceValues.Add(m.OffenceName, m.OffenceCount));
 
                 int beginYear = crimeByCoordinates.Min(m => (m.BeginYear));
                 int endYear = crimeByCoordinates.Max(m => (m.EndYear));
                 string localGovernmentAreaName = crimeByCoordinates.Select(m => (m.LocalGovernmentAreaName)).FirstOrDefault();
-                double total = offenceValues.Sum(m => (m.Value));
+                int totalCrimes = crimeByCoordinates.Sum(m => (m.OffenceCount));
+
 
                 for (int i = 0; i < offenceValues.Count; i++)
                 {
                     string key = offenceValues.Keys.ElementAt(i);
 
-                    offenceValues[key] /= total;
+                    offenceValues[key] /= totalCrimes;
                 }
 
                 List<OffenceModel> offenceModels = offenceValues
@@ -97,13 +98,13 @@ namespace CPT331.WebAPI.Controllers
                     .Take(count)
                     .Select(m => new OffenceModel(m.Key, m.Value)).ToList();
 
-                total = offenceModels.Sum(m => (m.Value));
-                offenceModels.Add(new OffenceModel(OtherCrimesName, (1 - total)));
+                double otherTotal = offenceModels.Sum(m => (m.Value));
+                offenceModels.Add(new OffenceModel(OtherCrimesName, (1 - otherTotal)));
 
-                crimeByCoordinateModel = new CrimeByCoordinateModel(beginYear, endYear, localGovernmentAreaName, offenceModels);
+                crimeByCoordinateModel = new CrimeByCoordinateModel(beginYear, endYear, localGovernmentAreaName, offenceModels, totalCrimes);
             }
             return crimeByCoordinateModel;
-		}
+        }
 
         /// <summary>
         /// A Coordinate &amp; column sorting provider for the controller actions
@@ -113,25 +114,25 @@ namespace CPT331.WebAPI.Controllers
         /// <param name="sortDirection">The sort order of the data returned; as ascending or descending.</param>
         /// <returns>A list of Crimes sorted by Coordinate and the specified property.</returns>
 		private static IEnumerable<CrimeByCoordinate> SortCrimeByCoordinates(IEnumerable<CrimeByCoordinate> crimeByCoordinates, string sortBy, SortDirection? sortDirection)
-		{
-			SortDirection direction = ((sortDirection.HasValue == true) ? sortDirection.Value : SortDirection.Ascending);
+        {
+            SortDirection direction = ((sortDirection.HasValue == true) ? sortDirection.Value : SortDirection.Ascending);
 
-			//	switch (sortBy.ToUpper())
-			//	{
-			//		case SortFieldID:
-			//			events = ((sortDirection.Value == SortDirection.Ascending) ? events.OrderBy(m => (m.ID)) : events.OrderByDescending(m => (m.ID)));
-			//			break;
-			//	
-			//		case SortFieldDateTime:
-			//			events = ((sortDirection.Value == SortDirection.Ascending) ? events.OrderBy(m => (m.BeginDateTime)).ThenBy(m => (m.Name)) : events.OrderByDescending(m => (m.BeginDateTime)).ThenBy(m => (m.Name)));
-			//			break;
-			//	
-			//		case SortFieldName:
-			//			events = ((sortDirection.Value == SortDirection.Ascending) ? events.OrderBy(m => (m.Name)) : events.OrderByDescending(m => (m.Name)));
-			//			break;
-			//	}
+            //	switch (sortBy.ToUpper())
+            //	{
+            //		case SortFieldID:
+            //			events = ((sortDirection.Value == SortDirection.Ascending) ? events.OrderBy(m => (m.ID)) : events.OrderByDescending(m => (m.ID)));
+            //			break;
+            //	
+            //		case SortFieldDateTime:
+            //			events = ((sortDirection.Value == SortDirection.Ascending) ? events.OrderBy(m => (m.BeginDateTime)).ThenBy(m => (m.Name)) : events.OrderByDescending(m => (m.BeginDateTime)).ThenBy(m => (m.Name)));
+            //			break;
+            //	
+            //		case SortFieldName:
+            //			events = ((sortDirection.Value == SortDirection.Ascending) ? events.OrderBy(m => (m.Name)) : events.OrderByDescending(m => (m.Name)));
+            //			break;
+            //	}
 
-			return crimeByCoordinates;
-		}
-	}
+            return crimeByCoordinates;
+        }
+    }
 }

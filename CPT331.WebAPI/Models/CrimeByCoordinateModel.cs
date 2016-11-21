@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Linq;
 
 #endregion
 
@@ -12,8 +13,8 @@ namespace CPT331.WebAPI.Models
     /// A wrapper for the EventGuardian crime statistics.
     /// </summary>
 	[DataContract(Name = "CrimeByCoordinate")]
-	public class CrimeByCoordinateModel
-	{
+    public class CrimeByCoordinateModel
+    {
         /// <summary>
         /// Creates an instance of CrimeByCoordinateModel using the values provided.
         /// </summary>
@@ -21,81 +22,100 @@ namespace CPT331.WebAPI.Models
         /// <param name="endYear"></param>
         /// <param name="name"></param>
         /// <param name="offenceModels"></param>
-		public CrimeByCoordinateModel(int beginYear, int endYear, string name, IEnumerable<OffenceModel> offenceModels)
-		{
-			_beginYear = beginYear;
-			_endYear = endYear;
-			_name = name;
-			_offenceModels = offenceModels;
-		}
+        /// <param name="total"></param>
+		public CrimeByCoordinateModel(int beginYear, int endYear, string name, IEnumerable<OffenceModel> offenceModels, int crimeTotal)
+        {
+            _beginYear = beginYear;
+            _endYear = endYear;
+            _name = name;
+            _offenceModels = offenceModels;
+            _crimeTotal = crimeTotal;
+        }
 
-		private int _beginYear;
-		private int _endYear;
-		private string _name;
-		private IEnumerable<OffenceModel> _offenceModels;
+        private int _beginYear;
+        private int _endYear;
+        private string _name;
+        private int _crimeTotal;
+        private IEnumerable<OffenceModel> _offenceModels;
 
         /// <summary>
         /// The first year represented in the crime statistics.
         /// </summary>
 		[DataMember]
-		public int BeginYear
-		{
-			get
-			{
-				return _beginYear;
-			}
-			set
-			{
-				_beginYear = value;
-			}
-		}
+        public int BeginYear
+        {
+            get
+            {
+                return _beginYear;
+            }
+            set
+            {
+                _beginYear = value;
+            }
+        }
 
         /// <summary>
         /// The final year represented in the crime statistics.
         /// </summary>
         [DataMember]
-		public int EndYear
-		{
-			get
-			{
-				return _endYear;
-			}
-			set
-			{
-				_endYear = value;
-			}
-		}
+        public int EndYear
+        {
+            get
+            {
+                return _endYear;
+            }
+            set
+            {
+                _endYear = value;
+            }
+        }
 
         /// <summary>
         /// The name of the Local Government Area.
         /// </summary>
         [DataMember]
-		public string Name
-		{
-			get
-			{
-				return _name;
-			}
-			set
-			{
-				_name = value;
-			}
-		}
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
 
         /// <summary>
         /// A list of offenses committed inside the Local Government Area.
         /// </summary>
 		[DataMember(Name = "Offences")]
-		public IEnumerable<OffenceModel> OffenceModels
-		{
-			get
-			{
-				return _offenceModels;
-			}
-			set
-			{
-				_offenceModels = value;
-			}
-		}
-	}
+        public IEnumerable<OffenceModel> OffenceModels
+        {
+            get
+            {
+                return _offenceModels;
+            }
+            set
+            {
+                _offenceModels = value;
+            }
+        }
+
+        /// <summary>
+        /// The total number of crimes commited in the region.
+        /// </summary>
+		[DataMember]
+        public int CrimeTotal
+        {
+            get
+            {
+                return _crimeTotal;
+            }
+            set
+            {
+                _crimeTotal = value;
+            }
+        }
+    }
 }
